@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="CubiD: Cubic Discrete Diffusion for High-Dimensional Representation Tokens">
+  <meta name="keywords" content="CubiD, Discrete Diffusion, Visual Generation, High-Dimensional Tokens, ImageNet">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CubiD: Cubic Discrete Diffusion</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+
+  <style>
+    body, html {
+      background-color: #fafafa;
+      font-family: 'Inter', 'Google Sans', sans-serif;
+      color: #1a1a2e;
+    }
+
+    /* Hero section - clean, minimal */
+    .hero-section {
+      background: #f5f5f5;
+      padding: 4.5rem 1.5rem 3rem;
+      border-bottom: 1px solid #e8e8e8;
+    }
+
+    .publication-title {
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1.15;
+      color: #1a1a2e;
+      max-width: 900px;
+      margin: 0 auto 0.3rem;
+    }
+
+    .publication-subtitle {
+      font-size: 1.2rem;
+      color: #666;
+      max-width: 750px;
+      margin: 0 auto 1.5rem;
+      font-weight: 400;
+    }
+
+    .publication-venue {
+      display: inline-block;
+      background: #1a1a2e;
+      border-radius: 20px;
+      padding: 0.35rem 1.1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 1.2rem;
+      letter-spacing: 0.3px;
+    }
+
+    .author-block a {
+      color: #1a1a2e;
+      text-decoration: none;
+      border-bottom: 1px solid #ccc;
+      transition: border-color 0.2s;
+    }
+
+    .author-block a:hover {
+      border-bottom-color: #1a1a2e;
+    }
+
+    .publication-authors {
+      color: #333;
+      font-size: 1.05rem;
+    }
+
+    .publication-affiliations {
+      color: #888;
+      font-size: 0.9rem;
+      margin-top: 0.4rem;
+    }
+
+    /* Link buttons */
+    .publication-links {
+      margin-top: 1.3rem;
+    }
+
+    .publication-links .button {
+      margin: 0.3rem 0.2rem;
+      border: 1.5px solid #1a1a2e;
+      background: transparent;
+      color: #1a1a2e;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .publication-links .button:hover {
+      background: #1a1a2e;
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    /* Sticky nav */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(8px);
+    }
+
+    .navbar a.navbar-item {
+      font-weight: 500;
+      color: #555;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .navbar a.navbar-item:hover {
+      color: #1a1a2e;
+      background: transparent;
+    }
+
+    /* Section styling */
+    .section {
+      padding: 3.5rem 1.5rem;
+    }
+
+    .section-title {
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      text-align: center;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .section-title::after {
+      content: "";
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 3px;
+      background: #1a1a2e;
+      border-radius: 2px;
+    }
+
+    /* Content cards */
+    .content-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 8px rgba(0,0,0,0.05);
+      border: 1px solid #f0f0f0;
+    }
+
+    /* Figure styling */
+    .figure-container {
+      text-align: center;
+      margin: 1.5rem 0;
+    }
+
+    .figure-container img {
+      max-width: 100%;
+      border-radius: 6px;
+      background: #fff;
+    }
+
+    .figure-caption {
+      margin-top: 0.8rem;
+      font-size: 0.9rem;
+      color: #777;
+      line-height: 1.6;
+      text-align: justify;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Accent */
+    .accent {
+      color: #1a1a2e;
+      font-weight: 600;
+    }
+
+    /* Quote block */
+    .opening-question {
+      font-size: 1.4rem;
+      font-style: italic;
+      color: #333;
+      text-align: center;
+      max-width: 750px;
+      margin: 0 auto 1rem;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    /* Insight box */
+    .insight-box {
+      background: #f7f7f7;
+      border-left: 3px solid #1a1a2e;
+      border-radius: 0 8px 8px 0;
+      padding: 1.2rem 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .insight-box .insight-label {
+      font-weight: 700;
+      color: #1a1a2e;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.3rem;
+    }
+
+    /* Gallery */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    /* BibTeX */
+    .bibtex-box {
+      background: #1a1a2e;
+      color: #e0e0e0;
+      border-radius: 10px;
+      padding: 1.5rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      overflow-x: auto;
+      position: relative;
+    }
+
+    .bibtex-box .copy-btn {
+      position: absolute;
+      top: 0.8rem;
+      right: 0.8rem;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #ccc;
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+
+    .bibtex-box .copy-btn:hover {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+    }
+
+    /* Footer */
+    .footer {
+      background: #1a1a2e;
+      color: rgba(255,255,255,0.5);
+      padding: 2rem 1.5rem;
+    }
+
+    .footer a {
+      color: rgba(255,255,255,0.7);
+    }
+
+    /* Table label */
+    .table-label {
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 0.8rem;
+      font-size: 0.95rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .publication-title { font-size: 1.8rem; }
+      .publication-subtitle { font-size: 1rem; }
+      .opening-question { font-size: 1.1rem; }
+      .section { padding: 2rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="mainNav">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div id="mainNav" class="navbar-menu">
+    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+      <a class="navbar-item" href="#abstract">Abstract</a>
+      <a class="navbar-item" href="#method">Method</a>
+      <a class="navbar-item" href="#results">Results</a>
+      <a class="navbar-item" href="#bibtex">BibTeX</a>
+      <div class="navbar-item has-dropdown is-hoverable">
+        <a class="navbar-link">More Research</a>
+        <div class="navbar-dropdown">
+          <a class="navbar-item" href="https://yuqingwang1029.github.io/TokenBridge/">TokenBridge</a>
+          <a class="navbar-item" href="https://yuqingwang1029.github.io/Loong-video/">Loong</a>
+          <a class="navbar-item" href="https://yuqingwang1029.github.io/PAR-project/">PAR</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero-section has-text-centered">
+  <div class="container is-max-desktop">
+    <span class="publication-venue">CVPR 2026 Highlight</span>
+    <h1 class="title publication-title">Cubic Discrete Diffusion</h1>
+    <p class="publication-subtitle">Discrete Visual Generation on High-Dimensional Representation Tokens</p>
+
+    <div class="is-size-5 publication-authors">
+      <span class="author-block"><a href="https://scholar.google.com/citations?user=QC7nNe0AAAAJ&hl=zh-CN">Yuqing Wang</a><sup>1</sup>,</span>
+      <span class="author-block"><a href="https://machuofan.github.io/">Chuofan Ma</a><sup>1</sup>,</span>
+      <span class="author-block"><a href="https://scholar.google.com/citations?user=xXMj6_EAAAAJ&hl=zh-CN">Zhijie Lin</a><sup>2&dagger;</sup>,</span>
+      <span class="author-block"><a href="https://tyshiwo1.github.io/">Yao Teng</a><sup>1</sup>,</span>
+      <span class="author-block"><a href="https://me.lj-y.com/">Lijun Yu</a><sup>3</sup>,</span>
+      <span class="author-block"><a href="https://scholar.google.com/citations?user=us4prRUAAAAJ&hl=zh-CN">Shuai Wang</a><sup>4</sup>,</span>
+      <span class="author-block"><a href="https://csuhan.com/">Jiaming Han</a><sup>5</sup>,</span>
+      <span class="author-block"><a href="https://scholar.google.com.sg/citations?user=Q8iay0gAAAAJ&hl=zh-CN">Jiashi Feng</a><sup>2</sup>,</span>
+      <span class="author-block"><a href="https://enjoyyi.github.io/">Yi Jiang</a><sup>2</sup>,</span>
+      <span class="author-block"><a href="https://xh-liu.github.io/">Xihui Liu</a><sup>1*</sup></span>
+    </div>
+
+    <div class="publication-affiliations">
+      <span><sup>1</sup>University of Hong Kong</span> &nbsp;
+      <span><sup>2</sup>ByteDance Seed</span> &nbsp;
+      <span><sup>3</sup>Carnegie Mellon University</span> &nbsp;
+      <span><sup>4</sup>Nanjing University</span> &nbsp;
+      <span><sup>5</sup>The Chinese University of Hong Kong</span>
+    </div>
+    <div class="publication-affiliations" style="font-size:0.8rem; margin-top:0.3rem;">
+      <span><sup>&dagger;</sup>Project lead &nbsp; <sup>*</sup>Corresponding author</span>
+    </div>
+
+    <div class="publication-links">
+      <span class="link-block">
+        <a href="https://arxiv.org/abs/2603.19232" target="_blank"
+           class="button is-rounded is-medium">
+          <span class="icon"><i class="ai ai-arxiv"></i></span>
+          <span>arXiv</span>
+        </a>
+      </span>
+      <span class="link-block">
+        <a href="https://github.com/YuqingWang1029/CubiD" target="_blank"
+           class="button is-rounded is-medium">
+          <span class="icon"><i class="fab fa-github"></i></span>
+          <span>Code</span>
+        </a>
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- Opening Question + TL;DR + Teaser -->
+<section class="section" id="abstract" style="padding-top:3rem; padding-bottom:1.5rem;">
+  <div class="container is-max-desktop">
+    <p class="opening-question">
+      <strong>Can we generate high-dimensional semantic representations discretely, just like language models generate text?</strong>
+    </p>
+    <div class="columns is-centered">
+      <div class="column is-four-fifths">
+        <p style="font-size:1.05rem; line-height:1.8; color:#444; text-align:justify;">
+          Generating high-dimensional semantic representations has long been a pursuit for visual generation, yet discrete methods&mdash;the paradigm shared with language models&mdash;remain stuck with low-dimensional tokens. <strong>CubiD</strong> breaks this barrier with fine-grained cubic masking across the h&times;w&times;d tensor, directly modeling dependencies across both spatial and dimensional axes in <span class="accent">768-dim representation space</span>, while the discretized tokens preserve their original understanding capabilities.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" style="max-width:1100px; margin-top:1.5rem;">
+    <div class="figure-container">
+      <img src="./static/images/vis.png" alt="CubiD Generated Samples">
+      <p class="figure-caption">
+        <strong>Generated samples from CubiD.</strong> Class-conditional generation on ImageNet 256&times;256 using 768-dimensional discrete representation tokens from DINOv2-B.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Abstract + Teaser Figure -->
+<section class="section" style="background:#fff;">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-four-fifths">
+        <h2 class="section-title">Abstract</h2>
+
+        <div class="content has-text-justified" style="font-size:1.02rem; line-height:1.8;">
+          <p>
+            Visual generation with discrete tokens has gained significant attention as it enables a unified token prediction paradigm shared with language models. However, current discrete generation methods remain limited to low-dimensional latent tokens (typically 8-32 dims), sacrificing the semantic richness essential for understanding. While high-dimensional pretrained representations (768-1024 dims) could bridge this gap, their discrete generation poses fundamental challenges.
+          </p>
+          <p>
+            We present <strong>Cubic Discrete Diffusion (CubiD)</strong>, the first discrete generation model for high-dimensional representations. CubiD performs fine-grained masking throughout the high-dimensional discrete representation&mdash;any dimension at any position can be masked and predicted from partial observations. This enables the model to learn rich correlations both within and across spatial positions, with the number of generation steps fixed at <em>T</em> regardless of feature dimensionality, where <em>T &ll; h&times;w&times;d</em>. On ImageNet-256, CubiD achieves state-of-the-art discrete generation with strong scaling behavior from 900M to 3.7B parameters. Crucially, we validate that these discretized tokens preserve original representation capabilities, demonstrating that the same discrete tokens can effectively serve both understanding and generation tasks.
+          </p>
+        </div>
+
+        <div class="figure-container" style="margin-top:2rem;">
+          <img src="./static/images/teaser.png" alt="Comparison of discrete generation approaches" style="max-width:700px;">
+          <p class="figure-caption">
+            <strong>Comparison of discrete visual generation approaches.</strong> (a) In low dimensions, autoregressive requires h&times;w steps; discrete diffusion parallelizes in T&lt;h&times;w steps. (b) In high dimensions, autoregressive becomes intractable (h&times;w&times;d steps), and standard discrete diffusion cannot model intra-position dependencies. CubiD performs fine-grained masking across the entire 3D tensor&mdash;any dimension at any position&mdash;enabling generation in T &ll; h&times;w&times;d steps while capturing both spatial and dimensional correlations.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Method -->
+<section class="section" id="method">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-four-fifths">
+        <h2 class="section-title">How CubiD Works</h2>
+
+        <div class="content has-text-justified" style="font-size:1.02rem; line-height:1.75; margin-bottom:1.5rem;">
+          <p>
+            CubiD follows the discrete diffusion paradigm by treating generation as iterative denoising of masked tokens. Unlike traditional methods that mask entire spatial positions, CubiD performs fine-grained masking at the dimension level&mdash;treating the h&times;w&times;d tensor as a unified modeling space where any subset of dimensions at any position can be masked and predicted from the remaining visible context. This enables the model to capture rich dependencies both within and across spatial locations through bidirectional attention and standard cross-entropy loss.
+          </p>
+        </div>
+
+        <div class="figure-container">
+          <img src="./static/images/train.png" alt="CubiD Method Overview">
+          <p class="figure-caption">
+            <strong>Overview of Cubic Discrete Diffusion.</strong> (a) A frozen representation encoder extracts continuous tokens, which are discretized through dimension-wise quantization into h&times;w&times;d discrete tokens. (b) During training, we randomly mask tokens across both spatial and dimensional axes. The transformer learns to predict masked tokens from unmasked context, capturing the rich dependency structure across the entire tensor.
+          </p>
+        </div>
+
+        <div class="content has-text-justified" style="margin-top:2rem;">
+          <p>
+            At inference, CubiD starts from a fully masked tensor and progressively unmasks tokens through iterative refinement&mdash;a coarse-to-fine process that establishes global structure first, then refines local details. Crucially, this requires only hundreds of iterations regardless of the 196,608 total tokens, decoupling generation cost from feature dimensionality.
+          </p>
+        </div>
+
+        <div class="figure-container" style="margin-top:1rem;">
+          <img src="./static/images/infer.png" alt="CubiD Inference Process">
+          <p class="figure-caption">
+            <strong>Generation process.</strong> From fully masked (0%) to complete image (100%). At each step, the model predicts all masked tokens in parallel and unmasks a subset following a cosine schedule. The visualization reveals a natural coarse-to-fine progression.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- One Token, Two Purposes -->
+<section class="section" id="results" style="background:#fff;">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-four-fifths">
+        <h2 class="section-title">One Token, Two Purposes</h2>
+
+        <div class="content has-text-justified" style="font-size:1.02rem; line-height:1.75;">
+          <p>
+            To validate whether discrete tokens maintain the understanding capabilities of continuous representations, we evaluate on multimodal understanding tasks using the LLaVA framework. We compare three variants: original continuous SigLIP2 features, vector quantization (VQ), and our dimension-wise quantization (DQ).
+          </p>
+        </div>
+
+        <div class="content-card" style="overflow-x:auto; padding:1rem;">
+          <p class="table-label">Understanding Performance on LLaVA Benchmarks</p>
+          <table class="table is-fullwidth is-hoverable" style="font-size:0.9rem;">
+            <thead>
+              <tr style="background:#1a1a2e; color:#fff;">
+                <th style="color:#fff;">Tokenizer</th>
+                <th style="color:#fff;">Type</th>
+                <th style="color:#fff;">GQA</th>
+                <th style="color:#fff;">TextVQA</th>
+                <th style="color:#fff;">POPE</th>
+                <th style="color:#fff;">MME</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>SigLIP2</td><td>Continuous</td><td>63.2</td><td>59.6</td><td>85.4</td><td>1484</td></tr>
+              <tr style="color:#c33;"><td>SigLIP2-VQ</td><td>Discrete (VQ)</td><td>54.9</td><td>45.6</td><td>81.2</td><td>1189</td></tr>
+              <tr style="background:#f5f5f5; font-weight:600;"><td>SigLIP2-DQ (Ours)</td><td>Discrete (DQ)</td><td>63.1</td><td>59.8</td><td>85.0</td><td>1480</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="content has-text-justified" style="margin-top:1rem;">
+          <p>
+            Traditional vector quantization methods that work well in low dimensions (8-32) fail at 768 dimensions due to the curse of dimensionality. Dimension-wise quantization treats each dimension independently, making discretization tractable at high dimensionality. As shown above, dimension-wise quantized features achieve nearly identical performance to continuous features on all benchmarks, while VQ suffers substantial degradation. This confirms that properly discretized high-dimensional tokens preserve semantic quality for understanding tasks, establishing them as viable unified representations for both understanding and generation.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Generation Quality -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-four-fifths">
+        <h2 class="section-title">Generation Quality</h2>
+
+        <div class="content has-text-justified" style="margin-bottom:1rem;">
+          <p>
+            We compare CubiD with existing discrete generation methods on ImageNet 256&times;256 class-conditional generation. CubiD directly generates with native high-dimensional representation tokens (768d), while all other methods operate in compressed latent spaces ranging from 8 to 128 dimensions.
+          </p>
+        </div>
+
+        <div class="content-card" style="overflow-x:auto; padding:1rem;">
+          <p class="table-label">ImageNet 256&times;256 Class-Conditional Generation</p>
+          <table class="table is-fullwidth is-hoverable" style="font-size:0.9rem;">
+            <thead>
+              <tr style="background:#1a1a2e; color:#fff;">
+                <th style="color:#fff;">Method</th>
+                <th style="color:#fff;">Latent Dim</th>
+                <th style="color:#fff;">#Params</th>
+                <th style="color:#fff;">gFID&darr;</th>
+                <th style="color:#fff;">gFID&darr; (w/ cfg)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="5" style="font-weight:600; color:#999; font-size:0.85rem;">Discrete Diffusion</td></tr>
+              <tr><td>MaskGIT</td><td>16</td><td>227M</td><td>6.18</td><td>4.02</td></tr>
+              <tr><td>Token-Critic</td><td>16</td><td>368M</td><td>4.69</td><td>&mdash;</td></tr>
+              <tr><td>DPC</td><td>16</td><td>454M</td><td>4.45</td><td>&mdash;</td></tr>
+
+              <tr><td colspan="5" style="font-weight:600; color:#999; font-size:0.85rem;">Discrete Autoregressive</td></tr>
+              <tr><td>ViT-VQGAN</td><td>32</td><td>1.7B</td><td>4.17</td><td>&mdash;</td></tr>
+              <tr><td>LlamaGen-XXL</td><td>8</td><td>1.4B</td><td>14.6</td><td>&mdash;</td></tr>
+              <tr><td>VAR</td><td>32</td><td>2.0B</td><td>2.16</td><td>1.97</td></tr>
+              <tr><td>VFMTok-XXL</td><td>12</td><td>1.4B</td><td>2.38</td><td>1.95</td></tr>
+              <tr><td>VFMTok-3B</td><td>12</td><td>3.1B</td><td>2.34</td><td>2.04</td></tr>
+
+              <tr><td colspan="5" style="font-weight:600; color:#1a1a2e; font-size:0.85rem;">High-Dimensional Tokens (Ours)</td></tr>
+              <tr style="background:#f8f8f8;">
+                <td>CubiD-L</td><td>768</td><td>946M</td><td>2.38</td><td>2.37</td>
+              </tr>
+              <tr style="background:#f3f3f3;">
+                <td>CubiD-XL</td><td>768</td><td>1.4B</td><td>2.06</td><td>2.04</td>
+              </tr>
+              <tr style="background:#ececec; font-weight:600;">
+                <td>CubiD-XXL</td><td>768</td><td>3.7B</td><td>2.02</td><td>1.88</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="content has-text-justified" style="margin-top:1rem;">
+          <p>
+            Notably, representation tokens show reduced dependency on classifier-free guidance&mdash;even without guidance, CubiD-XXL achieves 2.02 gFID, outperforming most existing methods. CubiD also demonstrates consistent improvement with scale, from 2.38 (L) to 2.06 (XL) to 2.02 (XXL) without guidance, exhibiting strong scaling behavior from 900M to 3.7B parameters.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BibTeX -->
+<section class="section" id="bibtex">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-four-fifths">
+        <h2 class="section-title">BibTeX</h2>
+        <div class="bibtex-box">
+          <button class="copy-btn" onclick="copyBibtex()">Copy</button>
+<pre style="margin:0; background:transparent; color:#e0e0e0; padding:0;">@article{wang2026cubid,
+  title={Cubic Discrete Diffusion: Discrete Visual Generation on High-Dimensional Representation Tokens},
+  author={Wang, Yuqing and Ma, Chuofan and Lin, Zhijie and Teng, Yao and Yu, Lijun and Wang, Shuai and Han, Jiaming and Feng, Jiashi and Jiang, Yi and Liu, Xihui},
+  journal={arXiv preprint arXiv:2603.19232},
+  year={2026}
+}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8 has-text-centered">
+        <p>
+          Website template inspired by <a href="https://nerfies.github.io/">Nerfies</a>.
+          Licensed under <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Copy BibTeX
+  function copyBibtex() {
+    const text = document.querySelector('.bibtex-box pre').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.copy-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+
+  // Navbar burger
+  document.addEventListener('DOMContentLoaded', () => {
+    const burgers = document.querySelectorAll('.navbar-burger');
+    burgers.forEach(el => {
+      el.addEventListener('click', () => {
+        const target = document.getElementById(el.dataset.target);
+        el.classList.toggle('is-active');
+        target.classList.toggle('is-active');
+      });
+    });
+  });
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
